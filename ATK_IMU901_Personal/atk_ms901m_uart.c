@@ -8,7 +8,19 @@
 */
 #include "atk_imu901.h"
 
-static UART_HandleTypeDef g_uart_handle;            /* ATK-MS901M UART */
+uint32_t DL_UART_transmitDataArray(UART_Regs *uart, const uint8_t *data, uint32_t length)
+{
+    uint32_t sentCount = 0;
+    for (uint32_t i = 0; i < length; i++) {
+        if (DL_UART_transmitDataBlocking(uart, data[i])) {
+            sentCount++;
+        } else {
+            break;
+        }
+    }
+    return sentCount;
+}
+static  UART_Regs g_uart_handle;            /* ATK-MS901M UART */
 //该结构体为HAL库中UART_HandleTypeDef结构体，用于配置UART的参数,我需将他更改为Driver中的结构体
 static struct
 {
@@ -113,7 +125,7 @@ void atk_ms901m_rx_fifo_flush(void)
  */
 void atk_ms901m_uart_send(uint8_t *dat, uint8_t len)
 {
-    HAL_UART_Transmit(&g_uart_handle, dat, len, HAL_MAX_DELAY);
+     DL_UART_transmitDataArray(&g_uart_handle, dat, len);
 }
 
 /**
@@ -124,17 +136,10 @@ void atk_ms901m_uart_send(uint8_t *dat, uint8_t len)
 void ATK_MS901M_UART_IRQHandler(void)
 {
     uint8_t tmp;
-    
-    if (__HAL_UART_GET_FLAG(&g_uart_handle, UART_FLAG_ORE) != RESET)    /* UART接收过载错误中断 */
+    //这里我删除了原函数中的接收过载判断，因为我找不到对应的函数，我会试图启动dma和扩大缓冲区来解决这个问题。
+    if(DL_UART_getPendingInterrupt(&g_uart_handle)==DL_UART_IIDX_RX)
     {
-        __HAL_UART_CLEAR_OREFLAG(&g_uart_handle);                       /* 清除接收过载错误中断标志 */
-        (void)g_uart_handle.Instance->SR;                               /* 先读SR寄存器，再读DR寄存器 */
-        (void)g_uart_handle.Instance->DR;
-    }
-    
-    if (__HAL_UART_GET_FLAG(&g_uart_handle, UART_FLAG_RXNE) != RESET)   /* UART接收中断 */
-    {
-        HAL_UART_Receive(&g_uart_handle, &tmp, 1, HAL_MAX_DELAY);       /* UART接收数据 */
+        DL_UART_receiveDataCheck(&g_uart_handle);
         atk_ms901m_uart_rx_fifo_write(&tmp, 1);                         /* 接收到的数据，写入UART接收FIFO */
     }
 }
