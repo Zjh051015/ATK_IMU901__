@@ -7,7 +7,6 @@
     该部分提供ATK_IMU901的串口接口定义以及函数功能
 */
 #include "atk_imu901.h"
-
 uint32_t DL_UART_transmitDataArray(UART_Regs *uart, const uint8_t *data, uint32_t length)
 {
     uint32_t sentCount = 0;
@@ -137,6 +136,14 @@ void ATK_MS901M_UART_IRQHandler(void)
 {
     uint8_t tmp;
     //这里我删除了原函数中的接收过载判断，因为我找不到对应的函数，我会试图启动dma和扩大缓冲区来解决这个问题。
+    /*
+        2024.7.27.2009
+        现在我找到了，原本这里通过读取HAL库中的结构体标识位来进行判断，这里我将调用DL库的函数来进行判断
+    */
+    if(DL_UART_isRXFIFOFull(&g_uart_handle)==1)
+    {
+       
+    }
     if(DL_UART_getPendingInterrupt(&g_uart_handle)==DL_UART_IIDX_RX)
     {
         DL_UART_receiveDataCheck(&g_uart_handle);

@@ -14,13 +14,13 @@
     #define ATK_MS901M_UART_TX_GPIO_PIN             GPIO_PIN_9
 
     /* UART接收引脚 */
-    #define ATK_MS901M_UART_RX_GPIO_PORT            PORTA
+    #define ATK_MS901M_UART_RX_GPIO_PORT            GPIOA
     #define ATK_MS901M_UART_RX_GPIO_PIN             GPIO_PIN_10
 
     /* UART接口 */
-    #define ATK_MS901M_UART_INTERFACE               USART1
-    #define ATK_MS901M_UART_IRQn                    USART1_IRQn
-    #define ATK_MS901M_UART_IRQHandler              USART1_IRQHandler
+    #define ATK_MS901M_UART_INTERFACE               UART0
+    #define ATK_MS901M_UART_IRQn                    UART0_INT_IRQn
+    #define ATK_MS901M_UART_IRQHandler              UART0_IRQHandler
 
     /* UART接收FIFO缓冲区大小 */
     #define ATK_MS901M_UART_RX_FIFO_BUF_SIZE        128
